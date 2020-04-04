@@ -23,6 +23,7 @@ Options:
   -s, --set show or set kubeconfig file
   -l, --list list  kubeconfig files
   -c, --clear  kubernete context
+  -p, --print print kubernetes context info
 
 EOT
 }   # ----------  end of function usage  ----------
@@ -83,6 +84,20 @@ clear_kubecon_file(){
   exit 0
 }
 
+print_k_context(){
+  ns=""
+  kconfig=""
+  if [ -f "${NAMESPACE_FILE_PATH}" ]; then
+    ns=$(cat ${NAMESPACE_FILE_PATH})
+  fi
+
+  if [ -f "${KUBECONFIG_FILE_PATH}" ]; then
+    kconfig="$(cat ${KUBECONFIG_FILE_PATH})"
+  fi
+  echo "namespaces:[${ns}] kubeconfig:[${kconfig}]"
+  exit 0
+}
+
 if [ $# -eq 0 ]; then 
   list_kubeconfigs
   exit 0; 
@@ -95,8 +110,8 @@ fi
 # vcpus:,vmname:,domain::,ipv4:,supervisor:,gateway:,\
 # iftype:,broadcast:,netmask:\
 #   -n ' * ERROR' -- "$@"`
-RET=`getopt -o hvn::ls::c \
---long help,version,namespace::,list,select::clear \
+RET=`getopt -o hvn::ls::cp \
+--long help,version,namespace::,list,select::clear,print \
   -n ' * ERROR' -- "$@"`
 
 if [ $? != 0 ] ; then echo "$__ScriptName exited with doing nothing." >&2 ; exit 1 ; fi
@@ -130,6 +145,9 @@ while true; do
             shift 2 ;;
         -c | --clear) 
             clear_kubecon_file
+            shift 2 ;;
+        -p | --print ) 
+            print_k_context
             shift 2 ;;
 
         -- ) shift; break ;;

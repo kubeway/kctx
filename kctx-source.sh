@@ -79,7 +79,7 @@ helm_cmd() {
     fi
   fi
 
-  kubectl ${args} ${@}
+  helm ${args} ${@}
 }
 
 alias kctx="${BASEDIR}/kctx "
