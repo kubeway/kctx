@@ -1,0 +1,139 @@
+#!/bin/bash
+#****************************************************************#
+# Create Date: 2020-04-04 00:09
+#********************************* ******************************#
+
+##################### BASH SETTING #####################
+# Treat unset variables as an error
+set -o nounset
+set +u
+
+##################### HELP #####################
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+__ScriptName=$(basename ${BASH_SOURCE[0]})
+usage() {
+    cat << EOT
+
+Usage : ${__ScriptName} [OPTION] ...
+  kubernete context 
+
+Options:
+  -h, --help                    Display this message
+  -n, --namespace         show or use namespace
+  -s, --set show or set kubeconfig file
+  -l, --list list  kubeconfig files
+  -c, --clear  kubernete context
+
+EOT
+}   # ----------  end of function usage  ----------
+
+kubectl_cmd() {
+  ns="default"
+  if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
+    ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+  fi
+  
+  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
+    kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
+    kubectl --kubeconfig=${kubeconfig} -n ${ns} ${@}
+  else
+    kubectl -n ${ns} ${@}
+  fi
+}
+
+KUBECONFIG_FILE=
+NAMESPACE=
+K8S_SYMBOL=
+
+SAVE_BASE_DIR="/tmp/"
+KUBECONFIG_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-kubeconfig"
+NAMESPACE_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-namespace"
+##################### FUNCTIONS #####################
+
+list_kubeconfigs() {
+  ls -al $HOME/.kube/config*|awk '{print $NF}' 
+  exit 0
+}
+
+set_kubeconfig_file() {
+  kubeconfig=$1
+  if [ -z "${kubeconfig}" ]; then
+      list_kubeconfigs
+      exit 0
+  fi
+  echo $kubeconfig > "${KUBECONFIG_FILE_PATH}" 
+  echo "default" >"${NAMESPACE_FILE_PATH}"
+  exit 0
+}
+
+set_namespace_file() {
+  ns=$1
+  if [ "${ns}" == "" ]; then
+      kubectl_cmd get ns
+      exit 0
+  fi
+
+  echo "${ns}" >"${NAMESPACE_FILE_PATH}"
+  exit 0
+}
+
+clear_kubecon_file(){
+  rm -rf "${KUBECONFIG_FILE_PATH}" 
+  rm -rf "${NAMESPACE_FILE_PATH}"
+  exit 0
+}
+
+if [ $# -eq 0 ]; then 
+  list_kubeconfigs
+  exit 0; 
+fi
+
+##################### PARSE OPTIONS #####################
+# parse options:
+# RET=`getopt -o hVvo:D:p:m:c:n:H::i:S:G:T:B:M: \
+# --long help,version,verbose,origver:,disksize:,path-prefix:,memsize:,\
+# vcpus:,vmname:,domain::,ipv4:,supervisor:,gateway:,\
+# iftype:,broadcast:,netmask:\
+#   -n ' * ERROR' -- "$@"`
+RET=`getopt -o hvn::ls::c \
+--long help,version,namespace::,list,select::clear \
+  -n ' * ERROR' -- "$@"`
+
+if [ $? != 0 ] ; then echo "$__ScriptName exited with doing nothing." >&2 ; exit 1 ; fi
+
+# Note the quotes around $RET: they are essential!
+eval set -- "$RET"
+
+# set option values
+while true; do
+    case "$1" in
+        -h | --help ) 
+            usage; 
+            exit 1
+            ;;
+        -v | --version ) 
+            echo "$(basename $0) -- version v0.1"; 
+            exit 1
+            ;;
+
+        -n | --namespace ) 
+            set_namespace_file $2
+            shift 2 ;;
+
+        -l | --list ) 
+            list_kubeconfigs
+            exit 0
+            ;;
+
+        -s | --select ) 
+            set_kubeconfig_file $2
+            shift 2 ;;
+        -c | --clear) 
+            clear_kubecon_file
+            shift 2 ;;
+
+        -- ) shift; break ;;
+        * ) echo "internal error!" ; exit 1 ;;
+     esac
+done
+
