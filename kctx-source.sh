@@ -21,29 +21,69 @@ kube_ctx() {
   ns=""
   if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
     f=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
-    kubeconfig=$(basename $f)
-    ns=":default"
+    if [ ! -z "${f}" ]; then
+      if [ -f "${f}" ]; then
+        kubeconfig=$(basename $f)
+        ns="default"
+      fi
+    fi
   fi
+
   if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
-    f=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
-    ns=":$(basename $f)"
+    _ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+    if [ ! -z "${_ns}" ]; then
+      ns="${_ns}"
+    fi
   fi
-  [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}\e[m\e[37;33m${ns}\e[m"
+  [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}\e[m:\e[37;33m${ns}\e[m"
 }
 
 kubectl_cmd() {
-  ns="default"
+  local args=""
   if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
     ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+    if [ -z "${ns}" ]; then
+      ns="default"
+    fi
+    args="${args} --namespace=${ns} "
   fi
   
   if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
     kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
-    kubectl --kubeconfig=${kubeconfig} -n ${ns} ${@}
-  else
-    kubectl -n ${ns} ${@}
+    if [ ! -z "${kubeconfig}" ]; then
+      if [ -f "${kubeconfig}" ]; then
+        args="${args} --kubeconfig=${kubeconfig} "
+      fi
+    fi
   fi
+
+  kubectl ${args} ${@}
+}
+
+helm_cmd() {
+  local args=""
+  if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
+    ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+    if [ -z "${ns}" ]; then
+      ns="default"
+    fi
+    args="${args} --namespace=${ns} "
+  fi
+
+  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
+    kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
+    if [ ! -z "${kubeconfig}" ]; then
+      if [ -f "${kubeconfig}" ]; then
+        args="${args} --kubeconfig=${kubeconfig} "
+      fi
+    fi
+  fi
+
+  kubectl ${args} ${@}
 }
 
 alias kctx="${BASEDIR}/kctx "
+alias kcontext="${BASEDIR}/kctx "
 alias kubectl=kubectl_cmd
+alias helm=helm_cmd
+
