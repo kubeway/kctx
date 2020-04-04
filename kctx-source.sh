@@ -28,7 +28,7 @@ kube_ctx() {
     f=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
     ns=":$(basename $f)"
   fi
-  [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}${ns}\e[m"
+  [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}\e[m\e[37;33m${ns}\e[m"
 }
 
 kubectl_cmd() {
