@@ -103,7 +103,7 @@ print_k_context(){
   if [ -f "${KUBECONFIG_FILE_PATH}" ]; then
     kconfig="$(cat ${KUBECONFIG_FILE_PATH})"
   fi
-  echo "namespaces:[${ns}] kubeconfig:[${kconfig}]"
+  echo "--kubeconfig=${kconfig} --namespace=${ns} "
   exit 0
 }
 
