@@ -33,13 +33,6 @@ kube_ctx() {
 
 kubectl_cmd() {
   local args=""
-  if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
-    ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
-    if [ -z "${ns}" ]; then
-      ns="default"
-    fi
-    args="${args} --namespace=${ns} "
-  fi
   
   if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
     kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
@@ -50,19 +43,19 @@ kubectl_cmd() {
     fi
   fi
 
-  kubectl ${args} ${@}
-}
-
-helm_cmd() {
-  local args=""
   if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
     ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
     if [ -z "${ns}" ]; then
       ns="default"
     fi
-    args="${args} --namespace=${ns} "
+    args="${args} -n ${ns} "
   fi
 
+  kubectl $(echo ${args}) ${@}
+}
+
+helm_cmd() {
+  local args=""
   if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
     kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
     if [ ! -z "${kubeconfig}" ]; then
@@ -72,7 +65,16 @@ helm_cmd() {
     fi
   fi
 
-  helm ${args} ${@}
+  if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
+    ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+    if [ -z "${ns}" ]; then
+      ns="default"
+    fi
+    args="${args} --namespace=${ns} "
+  fi
+
+
+  helm $(echo ${args}) ${@}
 }
 
 alias kctx="${BASEDIR}/kctx "
