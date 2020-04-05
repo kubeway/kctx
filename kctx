@@ -50,6 +50,7 @@ K8S_SYMBOL=
 SAVE_BASE_DIR="/tmp/"
 KUBECONFIG_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-kubeconfig"
 NAMESPACE_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-namespace"
+
 ##################### FUNCTIONS #####################
 
 list_kubeconfigs() {
@@ -109,34 +110,34 @@ POSITIONAL=()
  while [[ $# -gt 0 ]]; do
    key="$1"
    case "$1" in
-     -h | --help )
-         usage; 
-         exit 1
+     ls | -l | -ls | --list )
+         list_kubeconfigs
+         exit 0
          ;;
+
      -v | --version )
          echo "$(basename $0) -- version v0.2";
          exit 1
          ;;
 
-     -n | --namespace )
+     n | -n | --namespace )
          set_namespace_file $2
          shift 2 ;;
 
-     -l | --list )
-         list_kubeconfigs
-         exit 0
-         ;;
-
-     -s | --select )
+     s | -s | --select )
          set_kubeconfig_file $2
          shift 2 ;;
-     -c | --clear)
+     c | -c | --clear)
          clear_kubecon_file
          shift 2 ;;
-     -p | --print )
+     p | -p | --print )
          print_k_context
          shift 2 ;;
 
+     -h | --help )
+         usage; 
+         exit 1
+         ;;
      -- ) shift; break ;;
      * ) echo "internal error!" ; exit 1 ;;
    esac

@@ -5,21 +5,6 @@
 
 BASEDIR=$(dirname "$0")
 
-kube_symbol() {
-  symbol=""
-  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
-    f=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
-    if [ ! -z "${f}" ]; then
-      if [ -f "${f}" ]; then
-        kubeconfig=$(basename $f)
-        ns="default"
-        symbol="$(${BASEDIR}/kube-symbol.sh)"
-      fi
-    fi
-  fi
-  [ ! -z "$symbol" ] && echo -n "${symbol}"
-}
-
 kube_ctx() {
   # symbol=""
   kubeconfig=""
