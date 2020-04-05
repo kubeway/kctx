@@ -9,7 +9,8 @@ set -o nounset
 set +u
 
 ##################### HELP #####################
-BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+#BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASEDIR=$(dirname "$0")
 __ScriptName=$(basename ${BASH_SOURCE[0]})
 usage() {
     cat << EOT
@@ -103,55 +104,42 @@ if [ $# -eq 0 ]; then
   exit 0; 
 fi
 
-##################### PARSE OPTIONS #####################
-# parse options:
-# RET=`getopt -o hVvo:D:p:m:c:n:H::i:S:G:T:B:M: \
-# --long help,version,verbose,origver:,disksize:,path-prefix:,memsize:,\
-# vcpus:,vmname:,domain::,ipv4:,supervisor:,gateway:,\
-# iftype:,broadcast:,netmask:\
-#   -n ' * ERROR' -- "$@"`
-RET=`getopt -o hvn::ls::cp \
---long help,version,namespace::,list,select::clear,print \
-  -n ' * ERROR' -- "$@"`
+# ##################### PARSE OPTIONS #####################
+POSITIONAL=()
+ while [[ $# -gt 0 ]]; do
+   key="$1"
+   case "$1" in
+     -h | --help )
+         usage; 
+         exit 1
+         ;;
+     -v | --version )
+         echo "$(basename $0) -- version v0.2";
+         exit 1
+         ;;
 
-if [ $? != 0 ] ; then echo "$__ScriptName exited with doing nothing." >&2 ; exit 1 ; fi
+     -n | --namespace )
+         set_namespace_file $2
+         shift 2 ;;
 
-# Note the quotes around $RET: they are essential!
-eval set -- "$RET"
+     -l | --list )
+         list_kubeconfigs
+         exit 0
+         ;;
 
-# set option values
-while true; do
-    case "$1" in
-        -h | --help ) 
-            usage; 
-            exit 1
-            ;;
-        -v | --version ) 
-            echo "$(basename $0) -- version v0.1"; 
-            exit 1
-            ;;
+     -s | --select )
+         set_kubeconfig_file $2
+         shift 2 ;;
+     -c | --clear)
+         clear_kubecon_file
+         shift 2 ;;
+     -p | --print )
+         print_k_context
+         shift 2 ;;
 
-        -n | --namespace ) 
-            set_namespace_file $2
-            shift 2 ;;
-
-        -l | --list ) 
-            list_kubeconfigs
-            exit 0
-            ;;
-
-        -s | --select ) 
-            set_kubeconfig_file $2
-            shift 2 ;;
-        -c | --clear) 
-            clear_kubecon_file
-            shift 2 ;;
-        -p | --print ) 
-            print_k_context
-            shift 2 ;;
-
-        -- ) shift; break ;;
-        * ) echo "internal error!" ; exit 1 ;;
-     esac
-done
+     -- ) shift; break ;;
+     * ) echo "internal error!" ; exit 1 ;;
+   esac
+ done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 

@@ -3,28 +3,35 @@
 # Create Date: 2020-04-04 15:08
 #********************************* ******************************#
 
-BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASEDIR=$(dirname "$0")
 
 kube_symbol() {
   symbol=""
-  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
-    # fast
-    symbol="$(${BASEDIR}/kube-symbol.sh)"
-    # slow
-    # symbol=$(/Users/qiulin.nql/scripts/kctx/show-png.sh "/Users/qiulin.nql/scripts/kctx/k8s-logo.png" )
-  fi
-  [ ! -z "$symbol" ] && printf "\033[44;37m ${symbol} \033[0m"
-}
-
-kube_ctx() {
-  kubeconfig=""
-  ns=""
   if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
     f=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
     if [ ! -z "${f}" ]; then
       if [ -f "${f}" ]; then
         kubeconfig=$(basename $f)
         ns="default"
+        symbol="$(${BASEDIR}/kube-symbol.sh)"
+      fi
+    fi
+  fi
+  [ ! -z "$symbol" ] && echo -n "${symbol}"
+}
+
+kube_ctx() {
+  # symbol=""
+  kubeconfig=""
+  ns=""
+  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
+    f=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
+    if [ ! -z "${f}" ]; then
+      if [ -f "${f}" ]; then
+        _kubeconfig=$(basename $f)
+        kubeconfig=$_kubeconfig[8,-1]
+        ns="default"
+        # symbol="$(${BASEDIR}/kube-symbol.sh)"
       fi
     fi
   fi
@@ -35,7 +42,8 @@ kube_ctx() {
       ns="${_ns}"
     fi
   fi
-  [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}\e[m:\e[37;33m${ns}\e[m"
+  # [ ! -z "$kubeconfig" ] && printf "\e[32;40m${kubeconfig}\e[m:\e[37;33m${ns}\e[m"
+  [ ! -z "$kubeconfig" ] && echo -n "${kubeconfig}:${ns}"
 }
 
 kubectl_cmd() {
