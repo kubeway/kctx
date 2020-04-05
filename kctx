@@ -8,9 +8,20 @@
 set -o nounset
 set +u
 
-##################### HELP #####################
-#BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BASEDIR=$(dirname "$0")
+
+##################### set kube context tmp file path #####################
+SAVE_BASE_DIR="/tmp/"
+KUBECONFIG_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}"
+NAMESPACE_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}"
+if [ ! -z "${TMUX_PANE}" ]; then
+  KUBECONFIG_FILE_PATH="${KUBECONFIG_FILE_PATH}-${TMUX_PANE}"
+  NAMESPACE_FILE_PATH="${NAMESPACE_FILE_PATH}-${TMUX_PANE}"
+fi
+KUBECONFIG_FILE_PATH="${KUBECONFIG_FILE_PATH}-kubeconfig"
+NAMESPACE_FILE_PATH="${NAMESPACE_FILE_PATH}-namespace"
+
+##################### HELP #####################
 __ScriptName=$(basename ${BASH_SOURCE[0]})
 usage() {
     cat << EOT
@@ -31,12 +42,12 @@ EOT
 
 kubectl_cmd() {
   ns="default"
-  if [ -f "/tmp/${TERM_SESSION_ID}-namespace" ]; then
-    ns=$(cat "/tmp/${TERM_SESSION_ID}-namespace")
+  if [ -f "${NAMESPACE_FILE_PATH}" ]; then
+    ns=$(cat "${NAMESPACE_FILE_PATH}")
   fi
   
-  if [ -f "/tmp/${TERM_SESSION_ID}-kubeconfig" ]; then
-    kubeconfig=$(cat "/tmp/${TERM_SESSION_ID}-kubeconfig")
+  if [ -f "${KUBECONFIG_FILE_PATH}" ]; then
+    kubeconfig=$(cat "${KUBECONFIG_FILE_PATH}")
     kubectl --kubeconfig=${kubeconfig} -n ${ns} ${@}
   else
     kubectl -n ${ns} ${@}
@@ -46,10 +57,6 @@ kubectl_cmd() {
 KUBECONFIG_FILE=
 NAMESPACE=
 K8S_SYMBOL=
-
-SAVE_BASE_DIR="/tmp/"
-KUBECONFIG_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-kubeconfig"
-NAMESPACE_FILE_PATH="${SAVE_BASE_DIR}/${TERM_SESSION_ID}-namespace"
 
 ##################### FUNCTIONS #####################
 
