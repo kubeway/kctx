@@ -200,34 +200,33 @@ POSITIONAL=()
 
      n | -n | --namespace )
          set_namespace_file $2
-         shift 2 ;;
-         exit 0
+         shift 2 
+         exit 0;;
 
      s | -s | --select )
          set_kubeconfig_file $2
-         shift 2 ;;
-         exit 0
+         shift 2 
+         exit 0;;
      c | -c | --clear)
          clear_kubecon_file
-         shift 2 ;;
-         exit 0
+         shift 2 
+         exit 0;;
      p | -p | --print )
          print_k_context
-         shift 2 ;;
-         exit 0
+         shift 2 
+         exit 0;;
      --get-kube-ctx )
          get_kube_ctx
-         shift 1 ;;
-         exit 0
+         shift 1 
+         exit 0;;
      --get-kubectl-cmd )
          get_kubectl_cmd 
-         shift 1 ;;
-         exit 0
-         exit 0
+         shift 1 
+         exit 0;;
      --get-helm-cmd )
          get_helm_cmd 
-         shift 1 ;;
-         exit 0
+         shift 1 
+         exit 0;;
 
      -h | --help )
          usage; 
