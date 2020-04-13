@@ -61,8 +61,19 @@ K8S_SYMBOL=
 ##################### FUNCTIONS #####################
 
 list_kubeconfigs() {
-  ls -al $HOME/.kube/config*|awk '{print $NF}' 
-  exit 0
+    GREENB='\033[0;41m'    # Green Background (Color verde de fondo)
+    GREEN='\033[0;32m'     # Green Text (Color verde en el texto
+    REDB='\033[0;41m'      # Red Background (Color rojo de fondo)
+    RED='\033[0;31m'       # Red text (Color rojo en el texto)
+    NORMALB='\033[0;49m'   # Default background (Color por defecto de fondo)
+    NORMAL='\033[0m'       # Default foreground (Color por defecto del texto)
+
+    echo "normal configs:"
+    ls -al $HOME/.kube/config*|awk '{print "  "$NF}' 
+
+    echo -e "\n\n\x1b[1monline configs:"
+    ls -al $HOME/.kube/online/config*|awk -v COLOR=${RED} '{print COLOR"  "$NF}' 
+    exit 0
 }
 
 set_kubeconfig_file() {
@@ -184,35 +195,43 @@ POSITIONAL=()
 
      -v | --version )
          echo "$(basename $0) -- version v0.2";
-         exit 1
+         exit 0
          ;;
 
      n | -n | --namespace )
          set_namespace_file $2
          shift 2 ;;
+         exit 0
 
      s | -s | --select )
          set_kubeconfig_file $2
          shift 2 ;;
+         exit 0
      c | -c | --clear)
          clear_kubecon_file
          shift 2 ;;
+         exit 0
      p | -p | --print )
          print_k_context
          shift 2 ;;
+         exit 0
      --get-kube-ctx )
          get_kube_ctx
          shift 1 ;;
+         exit 0
      --get-kubectl-cmd )
          get_kubectl_cmd 
          shift 1 ;;
+         exit 0
+         exit 0
      --get-helm-cmd )
          get_helm_cmd 
          shift 1 ;;
+         exit 0
 
      -h | --help )
          usage; 
-         exit 1
+         exit 0
          ;;
      -- ) shift; break ;;
      * ) echo "internal error!" ; exit 1 ;;
